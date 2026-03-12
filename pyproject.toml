@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "system-design-mcp"
+version = "1.0.0"
+description = "Production-grade System Design MCP Agent Platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "System Design MCP" }]
+keywords = ["system-design", "mcp", "llm", "architecture", "agents"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["system_design_mcp*"]
