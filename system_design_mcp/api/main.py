@@ -2,12 +2,16 @@
 FastAPI application for the System Design MCP platform.
 
 Provides REST endpoints to trigger design generation and retrieve results.
+Optionally serves the React frontend from web/dist when built.
 """
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from system_design_mcp.core.mcp_controller import MCPController
@@ -31,6 +35,14 @@ app = FastAPI(
     description="Generate system architecture, APIs, and diagrams from natural language prompts.",
     version="1.0.0",
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000", "http://127.0.0.1:8000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -92,6 +104,21 @@ async def generate_design(request: DesignRequest) -> DesignResponse:
 async def health() -> dict[str, str]:
     """Health check for load balancers and monitoring."""
     return {"status": "ok"}
+
+
+# Serve React frontend when web/dist exists (e.g. after npm run build from repo root)
+_web_dist = Path(__file__).resolve().parents[2] / "web" / "dist"
+if _web_dist.is_dir():
+    app.mount("/assets", StaticFiles(directory=_web_dist / "assets"), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        from fastapi.responses import FileResponse
+        if not full_path.startswith("v1/") and not full_path.startswith("health"):
+            index = _web_dist / "index.html"
+            if index.exists():
+                return FileResponse(index)
+        raise HTTPException(status_code=404, detail="Not found")
 
 
 if __name__ == "__main__":

@@ -29,8 +29,6 @@ RUN pip install --no-cache-dir /wheels/*
 COPY . .
 RUN pip install -e .
 
-# Default: run Streamlit (override with CMD for API only)
-EXPOSE 8501
-ENV STREAMLIT_SERVER_PORT=8501
+EXPOSE 8000
 
-CMD ["streamlit", "run", "system_design_mcp/frontend/app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["uvicorn", "system_design_mcp.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
